@@ -1,0 +1,41 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+month                                                                             0x031F       2
+year                                                                              0x0321       2
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+rxdata                                                                            R4           1
+hour                                                                              R5,R6        2
+min                                                                               R7,R8        2
+sec                                                                               R9,R10       2
+weekday                                                                           R11,R12      2
+date                                                                              R13,R14      2
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+uart_transmit                                                                     0x0008C      9
+putstring                                                                         0x00095     19
+putint                                                                            0x000A8     50
+uart_init                                                                         0x000DA     14
+i2c_Begin                                                                         0x000E8      7
+setMode                                                                           0x000EF      9
+i2c_Clock_G000                                                                    0x000F8      3
+i2c_Start                                                                         0x000FB      8
+i2c_Stop                                                                          0x00103     10
+bcd2dec                                                                           0x0010D     15
+dec2bcd                                                                           0x0011C     17
+i2c_Write                                                                         0x0012D     48
+ds1307_Init                                                                       0x0015D      9
+I2C_Read                                                                          0x00166     36
+ds1307_Read                                                                       0x0018A     43
+ds1307_SetTime                                                                    0x001B5      9
+ds1307_SetDate                                                                    0x001BE     19
+main                                                                              0x001D1     97

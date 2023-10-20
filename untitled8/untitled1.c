@@ -1,0 +1,236 @@
+/*
+ * 1wire.c
+ *
+ * Created: 25/04/2023 10:16:34 SA
+ * Author: ACER
+ */
+
+#include <mega328p.h>
+#include <delay.h>
+#include "1wire_lib.h"
+#include "USART.h"
+
+unsigned char onewire_reset(void) {
+    unsigned char i;
+    //Set connected pin as Output and put it low        
+    onewire_DDR |= (1<<onewire_DQ); 
+    onewire_PORT &= (~ (1<<onewire_DQ)); 
+    //low for 480us
+    delay_us(480);
+
+    //release line but set connected pin as Input 
+    onewire_DDR &= ~(1<<onewire_DQ); //input
+    //wait for 70uS
+    delay_us(70);
+
+    //get value and wait 410us
+    i = (onewire_PIN & (1<<onewire_DQ));
+    delay_us(410);
+
+    //return the read value, 
+    //0= device on bus, 1= no device on bus
+    return i;
+}
+
+/////////////////////////////////////////
+//This function write a bit on the bus
+void onewire_writebit(unsigned char b){
+    //low for 6uS
+    onewire_DDR |= (1<<onewire_DQ); //output
+    onewire_PORT &= ~ (1<<onewire_DQ); //low
+    delay_us(6);
+
+    //if we want to write 1, release the line 
+    //if not keep it low)
+    if(b)
+        onewire_DDR &= ~(1<<onewire_DQ); //input
+
+    //wait 54uS and release the line
+    delay_us(54);
+    onewire_DDR &= ~(1<<onewire_DQ); //input
+    //wait for another 10us
+    delay_us(10);
+}
+
+///////////////////////////////////////////////////
+//This function read a bit on the bus
+unsigned char onewire_readbit(void){
+    unsigned char b=0;
+
+    //low for 5uS
+    onewire_PORT &= ~ (1<<onewire_DQ); //low
+    onewire_DDR |= (1<<onewire_DQ); //output
+    delay_us(5);
+
+    //release line and wait for 15uS
+    onewire_DDR &= ~(1<<onewire_DQ); //input
+    delay_us(10);
+
+    //read the value
+    if(onewire_PIN & (1<<onewire_DQ))
+        b=1;
+
+    //wait 55uS and return read value
+    delay_us(55);
+    return b;
+}
+
+/*
+ * write one byte
+ */
+void onewire_writebyte(unsigned char byte){
+    unsigned char i=8;
+    while(i--){
+        onewire_writebit(byte&1);
+        byte >>= 1;
+    }
+}
+
+/*
+ * read one byte
+ */
+unsigned char onewire_readbyte(void){
+    unsigned char i=8, data=0;
+    while(i--){
+        data >>= 1;
+        data |= (onewire_readbit()<<7);
+    }
+    return data;
+}
+
+/*
+ * get temperature
+ */
+float ds18b20_gettemp() {
+    long temperature_l;
+    long temperature_h;
+    float retd = 0;
+
+    #if onewire_STOPINTERRUPTONREAD == 1
+    #asm ("cli")
+    #endif
+
+    onewire_reset(); //reset
+    onewire_writebyte(onewire_CMD_SKIPROM); //skip ROM
+    onewire_writebyte(DS18B20_CMD_CONVERTTEMP); //start temperature conversion
+
+    while(!onewire_readbit()); //wait until conversion is complete
+
+    onewire_reset(); //reset
+    onewire_writebyte(onewire_CMD_SKIPROM); //skip ROM
+    onewire_writebyte(DS18B20_CMD_RSCRATCHPAD); //read scratchpad
+
+    //read 2 byte from scratchpad
+    temperature_l = onewire_readbyte();
+    temperature_h = onewire_readbyte();
+
+    #if onewire_STOPINTERRUPTONREAD == 1
+    #asm ("sei")
+    #endif
+
+    //convert the 12 bit value obtained
+    retd = ( ( temperature_h << 8 ) + temperature_l ) * 0.0625;
+
+    return retd;
+}
+
+// Function to search and determine the ROM code of the slaves connected on the bus
+// Returns the address of the first slave found, or 0xFF if no slave is found
+unsigned char onewire_search(unsigned char *address) {
+  unsigned char i, j, presence, rom_code[8];
+
+  // Reset the bus
+  onewire_reset();
+
+  // Send the search ROM command
+  onewire_writebyte(onewire_CMD_SEARCHROM);
+
+  // Loop through the 64-bit ROM code
+  for (i = 0; i < 8; i++) {
+    // Read a bit from the bus
+    presence = onewire_readbit();
+
+    // If the bit is 1, write 1 to the bus
+    if (presence) {
+      onewire_writebit(1);
+    } else {
+      // If the bit is 0, write 0 to the bus and skip the next read
+      onewire_writebit(0);
+      for (j = 0; j < 8; j++) {
+        onewire_readbit();
+      }
+    }
+
+    // Store the bit in the ROM code
+    rom_code[i] = presence;
+  }
+
+  // Check if the last read bit was 1
+  if (onewire_readbit()) {
+    // If it was, no slave was found
+    return 0xFF;
+  }
+
+  // The last read bit was 0, so a slave was found
+  // Copy the ROM code to the address pointer
+  for (i = 0; i < 8; i++) {
+    address[i] = rom_code[i];
+  }
+
+  // Return the address of the slave
+  return address;
+}
+
+// Function to change the sensor's resolution
+// resolution can be 9-bit (0x00), 10-bit (0x01), or 12-bit (0x02)
+void ds18b20_setresolution(unsigned char resolution) {
+  unsigned char i;
+
+  // Reset the bus
+  onewire_reset();
+
+  // Skip ROM
+  onewire_writebyte(onewire_CMD_SKIPROM);
+
+  // Write the resolution command
+  onewire_writebyte(DS18B20_CMD_WSCRATCHPAD);
+
+  // Write the resolution byte
+  onewire_writebyte(resolution);
+
+  // Do a 1-wire reset
+  onewire_reset();
+
+  // Skip ROM
+  onewire_writebyte(onewire_CMD_SKIPROM);
+
+  // Read the scratchpad
+  for (i = 0; i < 9; i++) {
+    onewire_readbyte();
+  }
+}
+
+long temp_value, temp_int, temp_dec;
+float temperature = 0;
+
+void main(void)
+{
+  uart_init();
+  while(1) {
+
+    temperature = ds18b20_gettemp(); 
+    temp_value = (long)(temperature*1000);
+    temp_int = temp_value/1000;
+    temp_dec = temp_value%1000;
+
+    putstring("Temperature: ");
+    putint(temperature);
+    putstring(".");
+    putint(temp_dec);  
+    putstring("C\n");   
+    
+    delay_ms(1000);
+  }  
+}
+
+

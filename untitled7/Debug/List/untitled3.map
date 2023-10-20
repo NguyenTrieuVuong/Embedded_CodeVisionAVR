@@ -1,0 +1,26 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+adc_value                                                                         0x032D       4
+voltage_val                                                                       0x0331       4
+demi_part                                                                         0x0335       4
+int_part                                                                          0x0339       4
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+rxdata                                                                            R4           1
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+uart_transmit                                                                     0x0008C      9
+putstring                                                                         0x00095     21
+putint                                                                            0x000AA     50
+uart_init                                                                         0x000DC     14
+ADC_init                                                                          0x000EA     24
+main                                                                              0x00102    122

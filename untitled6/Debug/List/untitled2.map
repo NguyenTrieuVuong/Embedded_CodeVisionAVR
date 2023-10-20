@@ -1,0 +1,23 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+check                                                                             0x0300       1
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+counter0                                                                          R3,R4        2
+rxdata                                                                            R6           1
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+uart_init                                                                         0x00071     13
+uart_transmit                                                                     0x0007E     10
+putint                                                                            0x00088     52
+timer1_ovf_isr                                                                    0x000BC     44
+main                                                                              0x000E8     27

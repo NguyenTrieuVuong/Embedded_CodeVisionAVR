@@ -1,0 +1,44 @@
+/*
+ * untitled1.c
+ *
+ * Created: 3/9/2023 9:45:19 AM
+ * Author: admin
+ */
+
+#include <mega328p.h>
+
+interrupt [TIM1_OVF] void timer1_ovf_isr(void)
+
+{
+
+	PORTB.5 = !PORTB.5;
+    TCNT1H = 0xD9;
+	TCNT1L = 0xD9;
+    PORTD = (TCNT0 | 0b00010000);
+}
+
+void main(void)
+{
+	CLKPR = (1 << CLKPCE);
+	CLKPR = 0b00000000;      // Dat he so chia la 16
+    DDRB |= 0b00100000; 
+    PORTB &= 0b11011111; 
+    DDRD = 0b11101111;
+    PORTD &= 0xF0;
+	TCCR1A = 0x00;
+	TCCR1B = 0b00000101;
+	TCNT1H = 0xD9;
+	TCNT1L = 0xD9;
+	TIMSK1 = 0b00000001;
+    TCCR0A = 0x00;
+    TCCR0B |= 0b00000111;
+    TCNT0 = 0x00;
+    
+#asm("sei")
+    while (1)
+        {
+        // Please write your application code here
+        if(TCNT0 ==10){
+            TCNT0 = 0x00;}
+        }
+}

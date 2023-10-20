@@ -1,0 +1,227 @@
+#include <delay.h>
+#include "USART.h"
+#define SCL_PIN 5
+#define SDA_PIN 4
+
+int hour, min, sec , weekday, date, month, year;
+
+void i2c_Begin()
+{
+	PORTC  |= (1 << SCL_PIN) | (1 << SDA_PIN);
+	DDRC |= (1 << SCL_PIN) | (1 << SDA_PIN);
+}
+
+void setMode(unsigned char mode)
+{
+	if (mode)
+		DDRC |= (1 << SDA_PIN);
+	else
+		DDRC &= ~(1 << SDA_PIN);
+}
+
+static void i2c_Clock(void)
+{
+	PORTC  |= (1 << SCL_PIN);
+	delay_us(4);
+	PORTC  &= ~(1 << SCL_PIN);
+	delay_us(5);
+}
+
+void i2c_Start(void)
+{
+	PORTC  |= (1 << SDA_PIN);
+	delay_us(4);
+	PORTC  |= (1 << SCL_PIN);
+	delay_us(4);
+
+	PORTC  &= ~(1 << SDA_PIN);
+	delay_us(4);
+	PORTC  &= ~(1 << SCL_PIN);
+	delay_us(4);
+}
+
+void i2c_Stop(void)
+{
+	PORTC  &= ~(1 << SDA_PIN);
+	delay_us(4);
+	PORTC  |= (1 << SCL_PIN);
+	delay_us(5);
+	PORTC  |= (1 << SDA_PIN);
+	delay_us(5);
+}
+
+unsigned int bcd2dec(unsigned int num)
+{
+	return ((num / 16 * 10) + (num % 16));
+}
+
+unsigned int dec2bcd(unsigned int num)
+{
+	return ((num / 10 * 16) + (num % 10));
+}
+
+unsigned int i2c_Write(unsigned int Data)
+{
+	unsigned int i, x = 0, ack;
+
+	for (i = 0; i < 8; i++)
+		{
+		x = Data & 0x80;
+		PORTC  &= ~(1 << SDA_PIN);
+		if (x)
+			PORTC  |= (1 << SDA_PIN);
+		i2c_Clock();
+		Data = Data << 1;
+		}
+
+	setMode(0);
+	PORTC  |= (1 << SCL_PIN);
+	delay_us(2);
+	ack = PINC & (1 << SDA_PIN);
+	PORTC  &= ~(1 << SCL_PIN);
+	delay_us(5);
+	setMode(1);
+
+	return ack;
+}
+
+void ds1307_Init(void)
+{
+	i2c_Begin();
+	i2c_Start();
+	i2c_Write(0xD0);
+	i2c_Write(0x07);
+	i2c_Write(0x00);
+	i2c_Stop();
+}
+
+unsigned int I2C_Read(unsigned int ACK)
+{
+	unsigned int i, Data = 0;
+
+	setMode(0);
+	PORTC  &= ~(1 << SCL_PIN);
+	delay_us(4);
+	for (i = 0; i < 8; i++)
+		{
+		PORTC  |= (1 << SCL_PIN);
+		Data <<= 1;
+		if (PINC & (1 << SDA_PIN))
+			Data |= 0x01;
+		PORTC  &= ~(1 << SCL_PIN);
+		delay_us(5);
+		}
+
+	setMode(1);
+	if (ACK)
+		PORTC  &= ~(1 << SDA_PIN);
+	else
+		PORTC  |= (1 << SDA_PIN);
+
+	PORTC  |= (1 << SCL_PIN);
+	delay_us(4);
+	PORTC  &= ~(1 << SCL_PIN);
+	delay_us(4);
+
+	return Data;
+}
+
+void ds1307_Read()
+{
+	i2c_Start();
+	i2c_Write(0xD0);
+	i2c_Write(0x00);
+	i2c_Start();
+	i2c_Write(0xD1);
+	sec = bcd2dec(I2C_Read(1));
+	min = bcd2dec(I2C_Read(1));
+	hour = bcd2dec(I2C_Read(1));
+	weekday = bcd2dec(I2C_Read(1));
+	date = bcd2dec(I2C_Read(1));
+	month = bcd2dec(I2C_Read(1));
+	year = bcd2dec(I2C_Read(0));
+	year += 2000;
+	i2c_Stop();
+}
+
+void ds1307_SetTime(unsigned int sec, unsigned int min, unsigned int hour)
+{
+	i2c_Start();
+	i2c_Write(0xD0);
+	i2c_Write(0x00);
+	i2c_Write(dec2bcd(sec));
+	i2c_Stop();
+
+	i2c_Start();
+	i2c_Write(0xD0);
+	i2c_Write(0x01);
+	i2c_Write(dec2bcd(min));
+	i2c_Stop();
+
+	i2c_Start();
+	i2c_Write(0xD0);
+	i2c_Write(0x02);
+	i2c_Write(dec2bcd(hour));
+	i2c_Stop();
+}
+
+void ds1307_SetDate(unsigned int weekday, unsigned int date, unsigned int month, unsigned int year)
+{
+	i2c_Start();
+	i2c_Write(0xD0);
+	i2c_Write(0x03);
+	i2c_Write(dec2bcd(weekday));
+	i2c_Stop();
+
+	i2c_Start();
+	i2c_Write(0xD0);
+	i2c_Write(0x04);
+	i2c_Write(dec2bcd(date));
+	i2c_Stop();
+
+	i2c_Start();
+	i2c_Write(0xD0);
+	i2c_Write(0x05);
+	i2c_Write(dec2bcd(month));
+	i2c_Stop();
+
+	i2c_Start();
+	i2c_Write(0xD0);
+	i2c_Write(0x06);
+	i2c_Write(dec2bcd(year));
+	i2c_Stop();
+}
+
+void main()
+{
+    
+	uart_init();
+	ds1307_Init();
+	ds1307_SetTime(50, 59, 23);
+	ds1307_SetDate(3, 30, 5, 23);
+	while (1)
+		{
+		ds1307_Read();
+		putstring("Time: ");
+		putint(hour);
+		putstring(":");
+		putint(min);
+		putstring(":");
+		putint(sec);
+		putstring(" ");
+		putstring("Thu:");
+		putint(weekday);
+		putstring(" Ngay:");
+		putint(date);
+		putstring("/");
+		putint(month);
+		putstring("/");
+		putint(year);
+		putstring("\n");
+		delay_ms(1000);
+        if (hour ==0 && min == 0){
+            PORTB.1 = 1;
+            delay_ms(500);
+        }
+		}
+}

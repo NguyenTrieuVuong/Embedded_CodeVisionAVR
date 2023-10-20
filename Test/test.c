@@ -1,0 +1,245 @@
+#include <mega328p.h>
+#include <alcd_i2c.h>
+#include "USART.h"
+#define SCL_PIN 2
+#define SDA_PIN 1
+#include <i2c.h>
+
+/* delay functions */
+#include <delay.h>
+
+/* PCF8574 7-bit I2C slave address set by the
+   state of pins A0, A1, A2 of logic 1 */
+#define PCF8574_I2C_ADDRESS 0x27 
+
+int hour, min, sec , weekday, date, month, year;
+
+void i2c_Begin()
+{
+    PORTB  |= (1 << SCL_PIN) | (1 << SDA_PIN);
+    DDRB |= (1 << SCL_PIN) | (1 << SDA_PIN);
+}
+
+void setMode(unsigned char mode)
+{
+    if (mode)
+        DDRB |= (1 << SDA_PIN);
+    else
+        DDRB &= ~(1 << SDA_PIN);
+}
+
+static void i2c_Clock(void)
+{
+    PORTB  |= (1 << SCL_PIN);
+    delay_us(4);
+    PORTB  &= ~(1 << SCL_PIN);
+    delay_us(5);
+}
+
+void i2cStart(void)
+{
+    PORTB  |= (1 << SDA_PIN);
+    delay_us(4);
+    PORTB  |= (1 << SCL_PIN);
+    delay_us(4);
+
+    PORTB  &= ~(1 << SDA_PIN);
+    delay_us(4);
+    PORTB  &= ~(1 << SCL_PIN);
+    delay_us(4);
+}
+
+void i2cStop(void)
+{
+    PORTB  &= ~(1 << SDA_PIN);
+    delay_us(4);
+    PORTB  |= (1 << SCL_PIN);
+    delay_us(5);
+    PORTB  |= (1 << SDA_PIN);
+    delay_us(5);
+}
+
+unsigned int bcd2dec(unsigned int num)
+{
+    return ((num / 16 * 10) + (num % 16));
+}
+
+unsigned int dec2bcd(unsigned int num)
+{
+    return ((num / 10 * 16) + (num % 10));
+}
+
+unsigned int i2cWrite(unsigned int Data)
+{
+    unsigned int i, x = 0, ack;
+
+    for (i = 0; i < 8; i++)
+        {
+        x = Data & 0x80;
+        PORTB  &= ~(1 << SDA_PIN);
+        if (x)
+            PORTB  |= (1 << SDA_PIN);
+        i2c_Clock();
+        Data = Data << 1;
+        }
+
+    setMode(0);
+    PORTB  |= (1 << SCL_PIN);
+    delay_us(2);
+    ack = PINB & (1 << SDA_PIN);
+    PORTB  &= ~(1 << SCL_PIN);
+    delay_us(5);
+    setMode(1);
+
+    return ack;
+}
+
+void ds1307_Init(void)
+{
+    i2c_Begin();
+    i2cStart();
+    i2cWrite(0xD0);
+    i2cWrite(0x07);
+    i2cWrite(0x00);
+    i2cStop();
+}
+
+unsigned int I2CRead(unsigned int ACK)
+{
+    unsigned int i, Data = 0;
+
+    setMode(0);
+    PORTB  &= ~(1 << SCL_PIN);
+    delay_us(4);
+    for (i = 0; i < 8; i++)
+        {
+        PORTB  |= (1 << SCL_PIN);
+        Data <<= 1;
+        if (PINB & (1 << SDA_PIN))
+            Data |= 0x01;
+        PORTB  &= ~(1 << SCL_PIN);
+        delay_us(5);
+        }
+
+    setMode(1);
+    if (ACK)
+        PORTB  &= ~(1 << SDA_PIN);
+    else
+        PORTB  |= (1 << SDA_PIN);
+
+    PORTB  |= (1 << SCL_PIN);
+    delay_us(4);
+    PORTB  &= ~(1 << SCL_PIN);
+    delay_us(4);
+
+    return Data;
+}
+
+void ds1307_Read()
+{
+    i2cStart();
+    i2cWrite(0xD0);
+    i2cWrite(0x00);
+    i2cStart();
+    i2cWrite(0xD1);
+    sec = bcd2dec(I2CRead(1));
+    min = bcd2dec(I2CRead(1));
+    hour = bcd2dec(I2CRead(1));
+    weekday = bcd2dec(I2CRead(1));
+    date = bcd2dec(I2CRead(1));
+    month = bcd2dec(I2CRead(1));
+    year = bcd2dec(I2CRead(0));
+    year += 2000;
+    i2cStop();
+}
+
+void ds1307_SetTime(unsigned int sec, unsigned int min, unsigned int hour)
+{
+    i2cStart();
+    i2cWrite(0xD0);
+    i2cWrite(0x00);
+    i2cWrite(dec2bcd(sec));
+    i2cStop();
+
+    i2cStart();
+    i2cWrite(0xD0);
+    i2cWrite(0x01);
+    i2cWrite(dec2bcd(min));
+    i2cStop();
+
+    i2cStart();
+    i2cWrite(0xD0);
+    i2cWrite(0x02);
+    i2cWrite(dec2bcd(hour));
+    i2cStop();
+}
+
+void ds1307_SetDate(unsigned int weekday, unsigned int date, unsigned int month, unsigned int year)
+{
+    i2cStart();
+    i2cWrite(0xD0);
+    i2cWrite(0x03);
+    i2cWrite(dec2bcd(weekday));
+    i2cStop();
+
+    i2cStart();
+	i2cWrite(0xD0);
+	i2cWrite(0x04);
+	i2cWrite(dec2bcd(date));
+	i2cStop();
+
+	i2cStart();
+	i2cWrite(0xD0);
+	i2cWrite(0x05);
+	i2cWrite(dec2bcd(month));
+	i2cStop();
+
+	i2cStart();
+	i2cWrite(0xD0);
+	i2cWrite(0x06);
+	i2cWrite(dec2bcd(year));
+	i2cStop();
+}
+
+void main(void)
+{
+
+int n=0;
+
+uart_init();
+ds1307_Init(); 
+
+    
+ds1307_SetTime(50, 59, 23);
+ds1307_SetDate(3, 30, 5, 23);
+
+/* initialize the LCD for 2 lines & 16 columns */
+lcd_i2c_init(PCF8574_I2C_ADDRESS,16);
+//lcd_printfxy(0,0,"Hello World");
+
+while (1)
+    {
+    ds1307_Read();
+//        putstring("Time: ");
+//        putint(hour);
+//        putstring(":");
+//        putint(min);
+//        putstring(":");
+//        putint(sec);
+//        putstring(" ");
+//        putstring("Thu:");
+//        putint(weekday);
+//        putstring(" Ngay:");
+//        putint(date);
+//        putstring("/");
+//        putint(month);
+//        putstring("/");
+//        putint(year);
+//        putstring("\n");
+    lcd_printfxy(0,0,"%u:%u:%u      ",hour,min,sec); /* print the counter variable */
+    lcd_printfxy(0,1,"%u/%u/%u      ",date,month,year);
+    //lcd_backlight(n++ & 1); /* flash the backlight */
+    //delay_ms(1000); /* 500ms delay */
+    //lcd_clear();
+    }
+}

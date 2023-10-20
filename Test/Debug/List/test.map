@@ -1,0 +1,58 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+month                                                                             0x0300       2
+year                                                                              0x0302       2
+_base_y (alcd_i2c.lib)                                                            0x0304       4
+_pcf8574_addr (alcd_i2c.lib)                                                      0x0308       1
+bus_data (alcd_i2c.lib)                                                           0x0309       1
+_lcd_y                                                                            0x030A       1
+_lcd_maxx                                                                         0x030B       1
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+rxdata                                                                            R4           1
+hour                                                                              R5,R6        2
+min                                                                               R7,R8        2
+sec                                                                               R9,R10       2
+weekday                                                                           R11,R12      2
+date                                                                              R13,R14      2
+_lcd_x                                                                            R3           1
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+uart_init                                                                         0x00080     14
+i2c_Begin                                                                         0x0008E      7
+setMode                                                                           0x00095      8
+i2c_Clock_G000                                                                    0x0009D      3
+i2cStart                                                                          0x000A0      8
+i2cStop                                                                           0x000A8     10
+bcd2dec                                                                           0x000B2     15
+dec2bcd                                                                           0x000C1     17
+i2cWrite                                                                          0x000D2     48
+ds1307_Init                                                                       0x00102      9
+I2CRead                                                                           0x0010B     36
+ds1307_Read                                                                       0x0012F     40
+ds1307_SetTime                                                                    0x00157      9
+ds1307_SetDate                                                                    0x00160     19
+main                                                                              0x00173     71
+_lcd_setbit_G100                                                                  0x001BA      5
+_lcd_clrbit_G100                                                                  0x001BF      7
+_lcd_write_nibble_hi_G100                                                         0x001C6     16
+_lcd_write_data                                                                   0x001D6     13
+lcd_gotoxy                                                                        0x001E3     13
+lcd_clear                                                                         0x001F0     11
+lcd_putchar                                                                       0x001FB     27
+lcd_i2c_init                                                                      0x00216     41
+pcf8574_write                                                                     0x0023F     13
+_print_G102                                                                       0x0024C    296
+put_lcd_G102                                                                      0x00374     14
+lcd_printfxy                                                                      0x00382     46
+strlen                                                                            0x003B0     12
+strlenf                                                                           0x003BC     13

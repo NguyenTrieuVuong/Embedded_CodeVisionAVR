@@ -1,0 +1,119 @@
+#include <mega328p.h>
+#include <delay.h>
+
+// Define the pins for the Nokia 5110 LCD display
+#define LCD_DC PORTD.4
+#define LCD_CE PORTD.5
+#define LCD_RST PORTD.6
+#define LCD_DIN PORTD.3
+#define LCD_CLK PORTD.2
+
+// Define the initialization commands for the Nokia 5110 LCD display
+const unsigned char init_cmds[] =
+{
+	0x21, 0xC0, 0x06, 0x13, 0x20, 0x0C
+};
+
+// Define the character data for the Nokia 5110 LCD display
+const unsigned char char_data[] =
+{
+	0x00, 0x00, 0x00, 0x00, 0x00, // Space
+	0x00, 0x00, 0x5F, 0x00, 0x00, // !
+	0x00, 0x07, 0x00, 0x07, 0x00, // "
+	// More character data...
+};
+
+// Define the function to send data to the Nokia 5110 LCD display
+void send_data(unsigned char data)
+{
+	LCD_DC = 1; // Set the data/command control signal to data
+	LCD_CE = 0; // Set the chip enable signal low to start data transmission
+	SPDR = data; // Send the data to the SPI module
+	while (!(SPSR & (1 << SPIF))); // Wait for the data transmission to complete
+	LCD_CE = 1; // Set the chip enable signal high to end data transmission
+}
+
+// Define the function to send commands to the Nokia 5110 LCD display
+void send_command(unsigned char cmd)
+{
+	LCD_DC = 0; // Set the data/command control signal to command
+	LCD_CE = 0; // Set the chip enable signal low to start command transmission
+	SPDR = cmd; // Send the command to the SPI module
+	while (!(SPSR & (1 << SPIF))); // Wait for the command transmission to complete
+	LCD_CE = 1; // Set the chip enable signal high to end command transmission
+}
+
+// Define the function to clear the Nokia 5110 LCD display
+void clear_display()
+{
+	int i;
+	for (i = 0; i < 84 * 6; i++) // Clear 84x6 pixels (6 rows of 84 pixels)
+		{
+		send_data(0x00); // Send blank data to the display
+		}
+}
+
+// Define the function to display a character on the Nokia 5110 LCD display
+void display_char(unsigned char ch)
+{
+	int i;
+	ch -= 32; // Adjust the character code to match the character data array
+	for (i = 0; i < 5; i++) // Send 5 columns of pixel data for the character
+		{
+		send_data(char_data[ch * 5 + i]); // Send the pixel data to the display
+		}
+	send_data(0x00); // Add a blank column after the character
+}
+
+// Define the function to display a string of characters on the Nokia 5110 LCD display
+void display_string(char *str)
+{
+	while (*str) // Loop through each character in the string
+		{
+		display_char(*str); // Display the character on the display
+		str++; // Move to the next character in the string
+		}
+}
+
+// Define the function to set the cursor position on the Nokia 5110 LCD display
+void set_cursor(unsigned char x, unsigned char y)
+{
+	send_command(0x80 | x); // Set column address
+	send_command(0x40 | y); // Set row address
+}
+
+void main(void)
+{
+	int i;
+
+	// Initialize the SPI module for communication with the Nokia 5110 LCD display
+	SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR0);
+
+	// Initialize the control signals for the Nokia 5110 LCD display
+	DDRD |= (1 << PORTD5) | (1 << PORTD4) | (1 << PORTD3) | (1 << PORTD2) | (1 << PORTD6);
+
+	// Set the reset signal high to initialize the Nokia 5110 LCD display
+	LCD_RST = 1;
+	delay_ms(10);
+	LCD_RST = 0;
+	delay_ms(10);
+	LCD_RST = 1;
+
+	// Send the initialization commands to the Nokia 5110 LCD display
+	for (i = 0; i < 6; i++)
+		send_command(init_cmds[i]);
+
+	// Clear the Nokia 5110 LCD display
+	clear_display();
+
+	// Set the cursor position to (0, 0)
+	set_cursor(0, 0);
+
+	// Display a string of characters on the Nokia 5110 LCD display
+	display_string("Hello World!");
+
+	while (1)
+		{
+		// Loop indefinitely
+		}
+}

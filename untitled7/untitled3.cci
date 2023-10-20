@@ -1,0 +1,13 @@
+VERSION:3 SOURCE_TIMESTAMP:56836F5B
+NODE:I LEVEL:0 LINE:8 "C:\cvavreval\inc\mega328p.h"
+NODE:I LEVEL:0 LINE:9 "C:\cvavreval\inc\delay.h"
+NODE:I LEVEL:0 LINE:10 "E:\CodeVisionAVR\untitled7\USART.h"
+NODE:I LEVEL:0 LINE:11 "E:\CodeVisionAVR\untitled7\ADC.h"
+NODE:M LEVEL:0 LINE:14 "fosc"
+NODE:M LEVEL:0 LINE:15 "baudrate"
+NODE:M LEVEL:0 LINE:16 "baud_prescaler"
+NODE:V LEVEL:0 LINE:18 "adc_value -> RAM:????"
+NODE:V LEVEL:0 LINE:19 "voltage_val -> RAM:????"
+NODE:V LEVEL:0 LINE:19 "demi_part -> RAM:????"
+NODE:V LEVEL:0 LINE:19 "int_part -> RAM:????"
+NODE:F LEVEL:0 LINE:75 "main(void)"

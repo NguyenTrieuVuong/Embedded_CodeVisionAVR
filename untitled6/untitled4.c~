@@ -1,0 +1,73 @@
+#include <mega328p.h>
+#include <delay.h>
+
+
+void send(unsigned char data)
+{
+	 while (!(UCSR0A & (1 << UDRE0)));
+
+	 UDR0 = data;
+}
+
+
+void sendInt(unsigned int data)
+{
+     unsigned int buf[8];
+     int index = 0, i, j;
+     j = data;
+
+     do
+          {
+          buf[index] = j % 10 + 48;
+          j = j / 10;
+          index ++;
+          }
+     while(j);
+
+     for(i = index; i > 0; i--)
+          send(buf[i - 1]);
+}
+
+interrupt [TIM1_OVF] void intr(void)
+{
+     PORTB.5 = !PORTB.5;
+     TCNT1H = 0xFC; // 57723
+     TCNT1L = 0xFC;
+     sendInt(TCNT0);
+}
+
+
+void main(void)
+{
+     // UART
+     unsigned int n = 103;
+     UBRR0H = n >> 8;
+     UBRR0L = n;
+     UCSR0B = 0b10011000;
+     UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
+
+     // timer
+     CLKPR = (1 << CLKPCE); // enable divide frequency
+     CLKPR = 0x00; // divide by 1
+     TCCR1A = 0x00; // overflow mode
+     TCCR1B = 0b00000101;
+     TCCR0B = 0b0000111;
+     TIMSK1 |= (1 << TOIE1); // enable overflow interrupt
+
+
+     TCNT1H = 0xFC; // 57723
+     TCNT1L = 0xFC;
+     TCNT0 = 0x00;
+#asm("sei")
+     DDRD = 0b11101111;
+     PORTD = 0b00010000;
+     DDRB.5 = 1;
+     PORTB.5 = 1;
+
+
+
+     while (1)
+          {
+
+          }
+}

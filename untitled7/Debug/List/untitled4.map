@@ -1,0 +1,27 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+rxdata                                                                            R4           1
+adc_value                                                                         R5,R6        2
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+uart_transmit                                                                     0x00073     10
+putstring                                                                         0x0007D     21
+uart_init                                                                         0x00092     14
+timer1_ovf_isr                                                                    0x000A0     13
+main                                                                              0x000AD     58
+put_buff_G100                                                                     0x000E7     46
+_print_G100                                                                       0x00115    293
+sprintf                                                                           0x0023A     55
+strlen                                                                            0x00271     12
+strlenf                                                                           0x0027D     13

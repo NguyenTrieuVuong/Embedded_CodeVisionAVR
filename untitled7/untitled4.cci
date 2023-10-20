@@ -1,0 +1,8 @@
+VERSION:3 SOURCE_TIMESTAMP:568D4A5D
+NODE:I LEVEL:0 LINE:1 "C:\cvavreval\inc\mega328p.h"
+NODE:I LEVEL:0 LINE:2 "C:\cvavreval\inc\stdio.h"
+NODE:I LEVEL:0 LINE:3 "C:\cvavreval\inc\delay.h"
+NODE:I LEVEL:0 LINE:4 "E:\CodeVisionAVR\untitled7\USART.h"
+NODE:V LEVEL:0 LINE:7 "adc_value -> R5,R6"
+NODE:F LEVEL:0 LINE:10 "timer1_ovf_isr(void)"
+NODE:F LEVEL:0 LINE:20 "main(void)"

@@ -1,0 +1,21 @@
+/*
+ * untitled2.c
+ *
+ * Created: 2/23/2023 10:30:33 AM
+ * Author: admin
+ */
+
+#include <mega328p.h>
+#include <delay.h>
+
+void main(void)
+{
+DDRB.5 = 1;
+PORTB.5 = 0;
+while (1)
+    {    
+    // Please write your applicationxX code here  
+        delay_ms(6000);
+          PORTB.5 = !PORTB.5;
+    }
+}

@@ -1,0 +1,31 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+temp_value                                                                        0x0313       4
+temp_int                                                                          0x0317       4
+temp_dec                                                                          0x031B       4
+temperature                                                                       0x031F       4
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+rxdata                                                                            R4           1
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+uart_transmit                                                                     0x00077      9
+putstring                                                                         0x00080     19
+putint                                                                            0x00093     50
+uart_init                                                                         0x000C5     14
+onewire_reset                                                                     0x000D3     19
+onewire_writebit                                                                  0x000E6     15
+onewire_readbit                                                                   0x000F5     16
+onewire_writebyte                                                                 0x00105     15
+onewire_readbyte                                                                  0x00114     19
+ds18b20_gettemp                                                                   0x00127     57
+main                                                                              0x00160     82

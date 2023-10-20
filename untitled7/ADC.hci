@@ -1,0 +1,6 @@
+VERSION:3 SOURCE_TIMESTAMP:5681B64C
+NODE:I LEVEL:0 LINE:1 "C:\cvavreval\inc\mega328p.h"
+NODE:I LEVEL:0 LINE:2 "C:\cvavreval\inc\delay.h"
+NODE:M LEVEL:0 LINE:4 "ADC_VREF_TYPE"
+NODE:F LEVEL:0 LINE:6 "ADC_init(unsigned char input)"
+NODE:F LEVEL:0 LINE:13 "ADC_read(unsigned char input)"

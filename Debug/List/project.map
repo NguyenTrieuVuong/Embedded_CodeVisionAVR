@@ -1,0 +1,24 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+init_cmds                                                                         0x030D       6
+char_data                                                                         0x0313      15
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+send_data                                                                         0x0007E      9
+send_command                                                                      0x00087     11
+clear_display                                                                     0x00092     14
+display_char                                                                      0x000A0     26
+display_string                                                                    0x000BA     15
+set_cursor                                                                        0x000C9     16
+main                                                                              0x000D9     39

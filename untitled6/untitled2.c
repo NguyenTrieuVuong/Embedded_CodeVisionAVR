@@ -1,0 +1,94 @@
+#include <mega328p.h>
+#include <stdio.h>
+#include <delay.h>
+#include <io.h>
+
+#define F_CPU 16000000UL // T?n s? ho?t d?ng c?a vi di?u khi?n
+#define BAUDRATE 9600UL // T?c d? truy?n thông UART
+#define UBRR_VALUE ((F_CPU/16/BAUDRATE) - 1) // Giá tr? UBRR d? c?u hình baud rate
+
+unsigned int counter0 = 0; // Bi?n d?m s? xung tín hi?u d?u vào
+
+unsigned char rxdata;
+
+volatile unsigned char check = 0;
+
+// Kh?i t?o UART v?i baud rate 9600, 8 bit d? li?u, không có bit stop, không có parity
+void uart_init(void)
+{
+	UBRR0H = (UBRR_VALUE >> 8);
+	UBRR0L = UBRR_VALUE;
+	UCSR0C = 0b00000110;
+	UCSR0B = 0b10011000;
+}
+
+// Hàm g?i d? li?u qua UART
+void uart_transmit(unsigned char data)
+{
+	while(!(UCSR0A & 0b00100000));
+
+	UDR0 = data;
+}
+
+void putint(unsigned int value)
+{
+	unsigned char buf[8];
+	int index = 0, i, j;
+	j = value;
+	do
+		{
+		buf[index] = j % 10 + 48;
+		j = j / 10;
+		index += 1;
+		}
+	while(j);
+	for (i = index; i > 0; i--)
+		uart_transmit(buf[i - 1]);
+	uart_transmit('\r');
+}
+interrupt [TIM1_OVF] void timer1_ovf_isr(void)
+{
+	//if (counter0 >= 256)
+	//	{
+	//	TCNT0 = 0;
+
+	if(check == 0)
+		{
+        putint(TCNT0);
+        PORTB.5 = 1;
+		TCNT1H = 0xE1;
+		TCNT1L = 0x7B;
+        check = 1;
+		}
+	else{
+        PORTB.5 = 0;
+        TCNT1H = 0xE1;
+		TCNT1L = 0x7B;
+        check = 0;
+    }
+	//else
+	//	counter0 = 0;
+}
+
+void main(void)
+{    
+	uart_init(); // Kh?i t?o UART
+	CLKPR = (1 << CLKPCE);
+	CLKPR = 0b00000000;      // Dat he so chia la 1 
+    DDRB |= 0b00100000;
+    PORTB &= 0b11011111;
+	TCCR1A = 0b00000000;
+	TCCR1B = 0b00000101;
+	TCNT1H = 0xE1;
+	TCNT1L = 0x7B;
+	TCCR0A = 0b00000000;
+	TCCR0B = (1 << CS02) | (1 << CS00); // C?u hình Timer0 ch?y ? ch? d? b? chia t?n 256
+	TCNT0 = 244;//Reset giá tr? d?m c?a Timer0
+	//TIMSK0 = (1 << TOIE0); // B?t ng?t cho Timer0
+	TIMSK1 = 0b00000001;
+#asm("sei") // B?t ng?t toàn c?c
+	while (1)
+		{
+		
+		}
+}

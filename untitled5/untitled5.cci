@@ -1,0 +1,4 @@
+VERSION:3 SOURCE_TIMESTAMP:56766E1B
+NODE:I LEVEL:0 LINE:1 "C:\cvavreval\inc\mega328p.h"
+NODE:F LEVEL:0 LINE:3 "sang_toi(int prescaler,int sang,int toi)"
+NODE:F LEVEL:0 LINE:14 "main(void)"

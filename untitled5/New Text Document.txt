@@ -1,0 +1,62 @@
+#include <mega328p.h>
+
+// Define clock frequency and desired PWM frequency
+#define F_CPU 16000000UL
+#define PWM_FREQ 500 // Hz
+
+// Calculate PWM period based on desired frequency
+#define PWM_PERIOD ((F_CPU/(2*256*PWM_FREQ))-1)
+
+// Define the number of brightness levels
+#define NUM_BRIGHTNESS_LEVELS 10
+
+// Define brightness values for each level
+const uint8_t brightness_values[NUM_BRIGHTNESS_LEVELS] = {0, 25, 51, 77, 102, 128, 153, 179, 205, 255};
+
+// Define current brightness level
+uint8_t current_brightness_level = 0;
+
+// Interrupt service routine for Timer 0 overflow
+interrupt [TIM0_OVF] void timer0_ovf_isr(void)
+{
+    // Update OCR0A register with new brightness value
+    OCR0A = brightness_values[current_brightness_level];
+    
+    // Increment brightness level
+    current_brightness_level++;
+    
+    // Wrap around if we exceed the number of brightness levels
+    if (current_brightness_level >= NUM_BRIGHTNESS_LEVELS)
+    {
+        current_brightness_level = 0;
+    }
+}
+
+void main(void)
+{
+    // Set data direction for PD6 (OC0A) as output
+    DDRD |= (1 << PD6);
+    
+    // Set Timer 0 prescaler to 256
+    TCCR0B |= (1 << CS02);
+    
+    // Set Timer 0 waveform generation mode to Fast PWM
+    TCCR0A |= (1 << WGM01) | (1 << WGM00);
+    
+    // Set Timer 0 output compare mode for non-inverting PWM output on OC0A
+    TCCR0A |= (1 << COM0A1);
+    
+    // Set Timer 0 PWM period
+    OCR0A = PWM_PERIOD;
+    
+    // Enable Timer 0 overflow interrupt
+    TIMSK0 |= (1 << TOIE0);
+    
+    // Enable global interrupts
+    #asm("sei")
+    
+    while (1)
+    {
+        // Wait for interrupt to change brightness level
+    }
+}

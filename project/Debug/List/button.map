@@ -1,0 +1,24 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+rxdata                                                                            R4           1
+count                                                                             R5,R6        2
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+uart_transmit                                                                     0x0006C     10
+putstring                                                                         0x00076     21
+putint                                                                            0x0008B     50
+uart_init                                                                         0x000BD     14
+mode                                                                              0x000CB     26
+external_interrupt_isr                                                            0x000E5     28
+main                                                                              0x00101     20

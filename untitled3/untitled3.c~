@@ -1,0 +1,52 @@
+/*
+ * untitled3.c
+ *
+ * Created: 3/2/2023 9:18:45 AM
+ * Author: admin
+ */
+
+#include <mega328p.h>
+#include <delay.h>
+void main(void)
+{
+  DDRD = 0b11111111;
+  PORTD = 0b00000000;
+  DDRB &= 0b11111110; //Dat PB0 lam input
+  PORTB |= 0b00000001; //Kich hoat dien tro keo len cho PB0
+while (1)
+    {
+    // Please write your application code here 
+    /*    
+             PORTD.0=1;
+             delay_ms(1000);
+             PORTD.1=1;
+             delay_ms(1000);
+             PORTD.2=1;
+             delay_ms(1000);
+             PORTD.3=1;
+             delay_ms(1000);
+             PORTD.4=1;
+             delay_ms(1000);
+             PORTD.5=1;
+             delay_ms(1000);
+             PORTD.6=1;
+             delay_ms(1000);
+             PORTD.7=1;
+             delay_ms(1000);
+             PORTD = 0b00000000; 
+             delay_ms(1000);  
+    */
+    if(PINB &= 0b00000001){
+    int led_index =0;
+    int ledD_number = 8;
+    int portD_bright_led = 0b00000001;
+    for (led_index = 0;led_index<ledD_number;led_index++)
+        {
+        PORTD = PORTD | portD_bright_led;
+        portD_bright_led |= portD_bright_led <<1;
+        delay_ms(1000);
+        }
+    PORTD = PORTD & 0b00000000;
+    }
+    }
+}

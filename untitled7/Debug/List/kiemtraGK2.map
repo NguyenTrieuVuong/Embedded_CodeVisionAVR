@@ -1,0 +1,28 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+message                                                                           0x0300      20
+_seed (stdlib.lib)                                                                0x0314       4
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+adc_value                                                                         R3,R4        2
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+main                                                                              0x00084     53
+adc_init                                                                          0x000B9      7
+uart_init                                                                         0x000C0     16
+uart_send_string                                                                  0x000D0     21
+flash_led                                                                         0x000E5     21
+put_buff_G100                                                                     0x000FA     46
+_print_G100                                                                       0x00128    293
+sprintf                                                                           0x0024D     55
+strlen                                                                            0x00284     12
+strlenf                                                                           0x00290     13
